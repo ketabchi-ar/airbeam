@@ -1,0 +1,16 @@
+# Byte-compiled / optimized / URL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Storage & Temporary upload data
+storage/
+LAN_Share/
+.incomplete/
+*.part
+
+# Environment & Logs
+.env
+*.log
+*.err
+.DS_Store
