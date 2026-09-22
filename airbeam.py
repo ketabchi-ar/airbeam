@@ -1152,8 +1152,19 @@ class LandropHandler(BaseHTTPRequestHandler):
 
         self.send_error(404)
 
+def find_free_port(start_port=8989, max_attempts=50):
+    for p in range(start_port, start_port + max_attempts):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            try:
+                s.bind(('0.0.0.0', p))
+                return p
+            except OSError:
+                continue
+    return start_port
+
 def run():
-    port = int(os.environ.get("AIRBEAM_PORT", 8989))
+    default_port = int(os.environ.get("AIRBEAM_PORT", 8989))
+    port = find_free_port(default_port)
     server = ThreadedHTTPServer(('0.0.0.0', port), LandropHandler)
     ip = get_lan_ip()
     print("=" * 60)
@@ -1162,6 +1173,13 @@ def run():
     print(f"📁 Shared Folder:     {STORAGE_DIR}")
     print(f"🔐 Security PIN:      {CURRENT_PIN}")
     print("=" * 60)
+    
+    # Auto-open browser on local host
+    try:
+        import webbrowser
+        webbrowser.open(f"http://localhost:{port}")
+    except Exception:
+        pass
     try:
         server.serve_forever()
     except KeyboardInterrupt:
