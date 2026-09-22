@@ -1,12 +1,26 @@
+<p align="center">
+  <img src="assets/banner.svg" alt="AirBeam Banner" width="100%">
+</p>
+
 # AirBeam ⚡
 
-[![DevSponsors](https://img.shields.io/badge/DevSponsors-Verified_OSS-6366f1?style=for-the-badge&logo=github)](https://devsponsors.github.io)
-[![Sponsor](https://img.shields.io/badge/Sponsor-DevSponsors_Hub-emerald?style=for-the-badge&logo=github-sponsors)](https://devsponsors.github.io)
-![Python](https://img.shields.io/badge/Python-3.7+-3776AB?style=for-the-badge&logo=python&logoColor=white)
-![Platform](https://img.shields.io/badge/Platform-Windows%20|%20macOS%20|%20Linux-0078D6?style=for-the-badge)
-![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
+<p align="center">
+  <img src="assets/logo.svg" alt="AirBeam Logo" width="96" height="96">
+</p>
 
-سیستم فوق‌سریع و ضدقطعی برای انتقال فایل‌های فوق‌سنگین (۲۰ گیگابایت به بالا) در شبکه محلی (LAN/Wi-Fi) با رابط کاربری وب مدرن و فونت استاندارد **وزیرمتن**.
+<p align="center">
+  <strong>انتقال فایل محلی فوق‌سریع، سبک و ضدقطعی (Resumable) برای شبکه‌های LAN / Wi-Fi</strong>
+</p>
+
+<p align="center">
+  <a href="https://devsponsors.github.io"><img src="https://img.shields.io/badge/DevSponsors-Verified_OSS-6366f1?style=for-the-badge&logo=github" alt="DevSponsors"></a>
+  <a href="https://devsponsors.github.io"><img src="https://img.shields.io/badge/Sponsor-DevSponsors_Hub-emerald?style=for-the-badge&logo=github-sponsors" alt="Sponsor"></a>
+  <img src="https://img.shields.io/badge/Python-3.7+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/Platform-Windows%20|%20macOS%20|%20Linux-0078D6?style=for-the-badge" alt="Platform">
+  <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License">
+</p>
+
+---
 
 بدون نیاز به اینترنت، بدون نیاز به نصب نرم‌افزار روی دستگاه مقصد، و **بدون حتی یک وابستگی خارجی** (Zero Dependencies - فقط کتابخانه استاندارد پایتون).
 

@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b1329" />
+      <stop offset="100%" stop-color="#050811" />
+    </linearGradient>
+    <linearGradient id="beamGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="50%" stop-color="#818cf8" />
+      <stop offset="100%" stop-color="#c084fc" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="16" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Background Shield -->
+  <rect width="512" height="512" rx="128" fill="url(#bgGrad)"/>
+  <rect width="504" height="504" x="4" y="4" rx="124" fill="none" stroke="#1e293b" stroke-width="4"/>
+
+  <!-- Concentric Broadcast Waves -->
+  <circle cx="256" cy="256" r="180" fill="none" stroke="#38bdf8" stroke-width="3" stroke-dasharray="12 16" opacity="0.25" />
+  <circle cx="256" cy="256" r="130" fill="none" stroke="#818cf8" stroke-width="4" stroke-dasharray="8 12" opacity="0.4" />
+
+  <!-- Center Lightning Beam -->
+  <path d="M280 80 L160 270 L250 270 L232 432 L352 242 L262 242 Z" 
+        fill="url(#beamGrad)" 
+        filter="url(#glow)" />
+</svg>

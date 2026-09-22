@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 480" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgBanner" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#070a14" />
+      <stop offset="40%" stop-color="#0d1527" />
+      <stop offset="100%" stop-color="#05070e" />
+    </linearGradient>
+    <linearGradient id="boltGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="50%" stop-color="#818cf8" />
+      <stop offset="100%" stop-color="#c084fc" />
+    </linearGradient>
+    <filter id="bannerGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="24" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <rect width="1200" height="480" rx="24" fill="url(#bgBanner)" />
+  <rect width="1196" height="476" x="2" y="2" rx="22" fill="none" stroke="#1e293b" stroke-width="2" />
+
+  <!-- Background Decorative Rings -->
+  <circle cx="950" cy="240" r="280" fill="none" stroke="#1e293b" stroke-width="2" opacity="0.3"/>
+  <circle cx="950" cy="240" r="200" fill="none" stroke="#38bdf8" stroke-width="2" stroke-dasharray="10 15" opacity="0.2"/>
+  <circle cx="950" cy="240" r="120" fill="none" stroke="#818cf8" stroke-width="3" stroke-dasharray="6 12" opacity="0.3"/>
+
+  <!-- Left Side Text & Title -->
+  <g transform="translate(100, 160)">
+    <!-- Main Title -->
+    <text x="0" y="0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="76" font-weight="900" fill="#ffffff" letter-spacing="-1">
+      Air<tspan fill="#38bdf8">Beam</tspan>
+    </text>
+    
+    <!-- Tagline -->
+    <text x="0" y="55" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="24" font-weight="500" fill="#94a3b8">
+      High-Speed, Resumable Local Network File Transfer
+    </text>
+
+    <!-- Badges Row -->
+    <g transform="translate(0, 105)">
+      <!-- Pill 1 -->
+      <rect width="170" height="38" rx="19" fill="#131c31" stroke="#22304d" stroke-width="1.5"/>
+      <text x="85" y="24" font-family="-apple-system, sans-serif" font-size="14" font-weight="700" fill="#38bdf8" text-anchor="middle">⚡ Zero Dependency</text>
+      
+      <!-- Pill 2 -->
+      <rect x="185" width="165" height="38" rx="19" fill="#131c31" stroke="#22304d" stroke-width="1.5"/>
+      <text x="267" y="24" font-family="-apple-system, sans-serif" font-size="14" font-weight="700" fill="#10b981" text-anchor="middle">🛡️ Auto-Resume</text>
+
+      <!-- Pill 3 -->
+      <rect x="365" width="145" height="38" rx="19" fill="#131c31" stroke="#22304d" stroke-width="1.5"/>
+      <text x="437" y="24" font-family="-apple-system, sans-serif" font-size="14" font-weight="700" fill="#f59e0b" text-anchor="middle">📱 QR Pairing</text>
+    </g>
+  </g>
+
+  <!-- Right Side Visual Icon -->
+  <g transform="translate(850, 140)">
+    <circle cx="100" cy="100" r="110" fill="#0f172a" stroke="#22304d" stroke-width="3"/>
+    <!-- Center Bolt -->
+    <path d="M120 -10 L25 110 L95 110 L80 215 L175 95 L105 95 Z" fill="url(#boltGrad)" filter="url(#bannerGlow)"/>
+  </g>
+</svg>
