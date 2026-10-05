@@ -9,7 +9,8 @@
 </p>
 
 <p align="center">
-  <strong>انتقال فایل محلی فوق‌سریع، سبک و ضدقطعی (Resumable) برای شبکه‌های LAN / Wi-Fi</strong>
+  <strong>Ultra-fast, Resumable Local Network File Transfer for LAN / Wi-Fi</strong><br>
+  <strong>انتقال فایل محلی فوق‌سریع، سبک و ضدقطعی برای شبکه‌های LAN / Wi-Fi</strong>
 </p>
 
 <p align="center">
@@ -24,79 +25,98 @@
 
 ---
 
-بدون نیاز به اینترنت، بدون نیاز به نصب نرم‌افزار روی دستگاه مقصد، و **بدون حتی یک وابستگی خارجی** (Zero Dependencies - فقط کتابخانه استاندارد پایتون).
+## 🌐 Languages / زبان‌ها
+- [English](#-english)
+- [فارسی](#-فارسی)
 
 ---
 
-## 📸 نمای محیط برنامه (Preview)
+## 🇬🇧 English
 
-### داشبورد اصلی و اشتراک با QR Code:
+### Overview
+AirBeam is a high-speed, zero-dependency local network transfer utility. No external dependencies, no cloud storage, and no client installation needed on receiver devices.
+
+### 📸 Screenshots
+#### Dashboard & Instant QR Code Pair:
 ![AirBeam Dashboard Preview](assets/preview.png)
 
-### ویزارد هوشمند مدیریت فایل‌های سنگین (Large File Wizard):
+#### Smart Wizard for Heavy Files:
 ![AirBeam Wizard](assets/wizard.png)
 
 ---
 
-## ⚡ اجرای تک‌دستوری (One-Liner Execution)
+### ⚡ Quick Start (One-Liner)
 
-نیاز به نصب یا کلون دستی هم ندارید؛ با یکی از دستورات زیر برنامه بلافاصله اجرا شده، **اولین پورت آزاد شبکه** را انتخاب کرده و مرورگر را اتوماتیک باز می‌کند:
-
-### در مک (macOS) و لینوکس:
+#### macOS & Linux:
 ```bash
 curl -sSL https://raw.githubusercontent.com/ketabchi-ar/airbeam/main/airbeam.py | python3
 ```
 
-### در ویندوز (PowerShell):
+#### Windows (PowerShell):
 ```powershell
 irm https://raw.githubusercontent.com/ketabchi-ar/airbeam/main/airbeam.py | python
 ```
 
-*(یا کلون سنتی: `git clone https://github.com/ketabchi-ar/airbeam.git && cd airbeam && python3 airbeam.py`)*
+---
+
+### ✨ Features
+- **⚡ Turbo Multi-Thread Download:** Built-in web download manager using parallel streams to maximize Wi-Fi throughput without requiring IDM.
+- **🛡️ Resumable Transfers:** Chunked 8MB uploads with auto-resume on network drop or sleep.
+- **📡 Auto Network Discovery:** Background UDP beacon broadcasting for instant peer discovery.
+- **📱 Zero-Config QR Code:** Scan and pair instantly from mobile or another PC.
+- **📁 Full Folder Uploads:** Drag-and-drop entire folders preserving directory structures.
+- **🌐 Dual Language Support:** Instant switch between English and Persian.
+- **🔒 Security PIN:** Prevents unauthorized network guests from accessing shared files.
+- **☕ Screen Wake Lock:** Keeps device screen alive during transfers to prevent OS sleep.
 
 ---
 
-## ✨ قابلیت‌های کلیدی
+## 🇮🇷 فارسی
 
-- **🛡️ ضد قطعی و ادامه خودکار (Resumable Chunking):** فایل‌ها به قطعات ۸ مگابایتی تقسیم می‌شوند. در صورت نوسان وای‌فای، اسلیپ دستگاه یا بستن تب، انتقال از بایت باقیمانده ادامه می‌یابد و از نو شروع نمی‌شود.
-- **🧙‍♂️ ویزارد انتخاب استراتژی انتقال (Smart Wizard):** برای فایل‌های حجیم (+۱ گیگابایت)، ویزارد هوشمند باز شده و بهترین سناریوی انتقال (پایدار یا مستقیم) را پیشنهاد می‌دهد.
-- **📱 جفت‌سازی فوری با QR Code (Zero-Type UX):** بدون نیاز به تایپ دستی IP؛ فقط اسکن بارکد با دوربین گوشی یا لپ‌تاپ طرف مقابل.
-- **📁 پشتیبانی از انتقال پوشه کامل (Folder Drag & Drop):** ارسال کل یک پوشه همراه تمام زیرپوشه‌ها و فایل‌ها بدون نیاز به فشرده‌سازی و Zip.
-- **🔌 تشخیص خودکار پورت آزاد:** اگر پورت پیش‌فرض پر باشد، خودکار اولین پورت آزاد را پیدا کرده و با آن بالا می‌آید.
-- **🌐 باز شدن خودکار مرورگر:** به محض اجرا، تب کنترل پنل روی سیستم شما باز می‌شود.
-- **🗑️ مدیریت و حذف فایل‌ها از داخل وب:** امکان حذف فایل‌های به اشتراک‌گذاشته شده با یک کلیک.
-- **📋 اشتراک فوری کلیپ‌بورد (Instant Text Sync):** تب مجزا برای تبادل سریع پسوردها، لینک‌ها و متون.
-- **🔒 پین‌کد امنیتی (Security PIN):** جلوگیری از اتصالات ناخواسته افراد ناشناس در وای‌فای‌های عمومی.
-- **☕ بیدار نگه‌داشتن صفحه (Screen Wake Lock):** جلوگیری از Sleep شدن سیستم و قطع شبکه حین انتقال.
-- **🎨 طراحی Dark Mode با فونت وزیرمتن.**
+### معرفی پروژه
+ایربیم (AirBeam) یک ابزار فوق‌سریع و سبک برای انتقال فایل در شبکه محلی بدون نیاز به اینترنت و بدون حتی یک وابستگی خارجی (Zero Dependencies - فقط کتابخانه استاندارد پایتون) است.
 
----
+### ⚡ اجرای سریع (تک‌دستوری)
 
-## 📶 شرایط اتصال و پیش‌نیازها
+#### در مک و لینوکس:
+```bash
+curl -sSL https://raw.githubusercontent.com/ketabchi-ar/airbeam/main/airbeam.py | python3
+```
 
-1. هر دو دستگاه (فرستنده و گیرنده) باید به **یک شبکه وای‌فای یا مودم/سوئیچ LAN مشترک** وصل باشند (نیازی به اتصال اینترنت جهانی نیست).
-2. دستگاه مقابل هیچ نرم‌افزاری لازم ندارد؛ تنها کافیست لینک یا QR Code را با هر مرورگری باز کند.
+#### در ویندوز (PowerShell):
+```powershell
+irm https://raw.githubusercontent.com/ketabchi-ar/airbeam/main/airbeam.py | python
+```
 
 ---
 
-## ⚙️ تنظیمات پیشرفته (اختیاری)
+### ✨ قابلیت‌های کلیدی
+- **⚡ دانلود فوق‌سریع موازی (Built-in Turbo Download):** دانلود چندکانکشنه مستقیم در داخل صفحه وب برای پر کردن سقف پهنای باند وای‌فای بدون نیاز به نصب دانلود منیجر مجزا.
+- **🛡️ ضدقطعی و ادامه خودکار (Resumable Chunking):** قطعه‌بندی ۸ مگابایتی و ادامه انتقال در صورت قطعی اتصال یا اسلیپ سیستم.
+- **📡 کشف خودکار در شبکه محلی (UDP Beacon Discovery):** ارسال پیام برودکست در شبکه محلی برای شناسایی دستگاه‌ها.
+- **📱 جفت‌سازی فوری با QR Code:** اتصال سریع موبایل و لپ‌تاپ با اسکن دوربین بدون نیاز به تایپ دستی آدرس.
+- **📁 پشتیبانی از انتقال پوشه کامل (Folder Drag & Drop):** آپلود ساختار کامل پوشه‌ها بدون نیاز به Zip کردن.
+- **🌐 پشتیبانی کامل دو زبانه (فارسی / انگلیسی):** تغییر آنی زبان محیط کاربری.
+- **🔒 پین‌کد امنیتی (Security PIN):** محافظت از حریم خصوصی در شبکه‌های وای‌فای اشتراکی.
+- **☕ بیدار نگه‌داشتن صفحه (Screen Wake Lock):** جلوگیری از قطع ارتباط ناشی از به خواب رفتن دستگاه.
 
-برای تغییر پورت پیش‌فرض یا مسیر ذخیره فایل‌ها:
+---
+
+## ⚙️ Configuration / تنظیمات پیشرفته
 
 ```bash
-# لینوکس و مک:
+# macOS & Linux
 export AIRBEAM_PORT=9090
-export AIRBEAM_STORAGE="/مسیر/دلخواه/شما"
+export AIRBEAM_STORAGE="~/Downloads/LAN_Share"
 python3 airbeam.py
 
-# ویندوز (PowerShell):
+# Windows (PowerShell)
 $env:AIRBEAM_PORT="9090"
-$env:AIRBEAM_STORAGE="D:\\SharedFiles"
+$env:AIRBEAM_STORAGE="D:\\LAN_Share"
 python airbeam.py
 ```
 
 ---
 
-## 📄 لایسنس
-
-این پروژه تحت مجوز [MIT](LICENSE) منتشر شده است. استفاده، شخصی‌سازی و توسعه آن کاملاً آزاد است.
+## 📄 License
+Released under the [MIT License](LICENSE).

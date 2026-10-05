@@ -10,6 +10,7 @@ import sys
 import json
 import time
 import socket
+import threading
 import mimetypes
 import hashlib
 from urllib.parse import quote, unquote, parse_qs, urlparse
@@ -17,6 +18,32 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 from socketserver import ThreadingMixIn
 
 DEFAULT_STORAGE = os.path.expanduser("~/LAN_Share")
+
+# Discovery & Network Broadcast
+BROADCAST_PORT = 8990
+DISCOVERY_MAGIC = "AIRBEAM_DISCOVERY_V1"
+
+def start_discovery_beacon(ip, port):
+    def beacon_worker():
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        sock.settimeout(0.5)
+        payload = json.dumps({
+            "magic": DISCOVERY_MAGIC,
+            "ip": ip,
+            "port": port,
+            "hostname": socket.gethostname()
+        }).encode('utf-8')
+        while True:
+            try:
+                sock.sendto(payload, ('<broadcast>', BROADCAST_PORT))
+            except Exception:
+                pass
+            time.sleep(2.5)
+
+    t = threading.Thread(target=beacon_worker, daemon=True)
+    t.start()
+
 STORAGE_DIR = os.environ.get("AIRBEAM_STORAGE", DEFAULT_STORAGE)
 TEMP_DIR = os.path.join(STORAGE_DIR, ".incomplete")
 CHUNK_SIZE = 8 * 1024 * 1024  # 8 MB chunks
@@ -26,6 +53,20 @@ os.makedirs(TEMP_DIR, exist_ok=True)
 
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     daemon_threads = True
+
+    def server_bind(self):
+        super().server_bind()
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+    def get_request(self):
+        sock, addr = super().get_request()
+        try:
+            sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 4 * 1024 * 1024)
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 4 * 1024 * 1024)
+        except OSError:
+            pass
+        return sock, addr
 
 def get_lan_ip():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -388,6 +429,24 @@ HTML_PAGE = """<!DOCTYPE html>
     font-weight: 700;
     border: none;
     cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .btn-dl-turbo {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #fff;
+    border: 1px solid rgba(16, 185, 129, 0.4);
+  }
+  .lang-btn {
+    background: #0f172a;
+    color: var(--primary);
+    border: 1px solid var(--card-border);
+    padding: 0.35rem 0.75rem;
+    border-radius: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
   }
   .btn-del {
     background: rgba(239, 68, 68, 0.15);
@@ -412,23 +471,24 @@ HTML_PAGE = """<!DOCTYPE html>
   <div class="header">
     <div class="header-left">
       <h1><span>⚡</span> AirBeam</h1>
+      <button class="lang-btn" id="langSwitch" onclick="toggleLanguage()">English</button>
     </div>
     <div class="badges">
       <div class="security-indicator">
-        <span>🔒</span> رمزنگاری چانک فعال
+        <span>🔒</span> <span data-i18n="secEnc">رمزنگاری چانک فعال</span>
       </div>
       <div class="ip-badge" id="hostBadge">__HOST_URL__</div>
       <div class="pin-badge">
-        <span>🔐 پین تطبیق:</span>
+        <span>🔐 <span data-i18n="pinLabel">پین تطبیق:</span></span>
         <strong style="color:#fff; font-size:1.05rem;">__PIN__</strong>
       </div>
     </div>
   </div>
 
   <div class="mode-tabs">
-    <div class="mode-tab active" id="tabFiles" onclick="switchView('files')">📁 انتقال فایل و فولدر</div>
-    <div class="mode-tab" id="tabP2P" onclick="switchView('p2p')">🌐 اتصال مستقیم P2P (WebRTC)</div>
-    <div class="mode-tab" id="tabText" onclick="switchView('text')">📋 کلیپ‌بورد و متن فوری</div>
+    <div class="mode-tab active" id="tabFiles" onclick="switchView('files')" data-i18n="tabFiles">📁 انتقال فایل و فولدر</div>
+    <div class="mode-tab" id="tabP2P" onclick="switchView('p2p')" data-i18n="tabP2P">🌐 اتصال مستقیم P2P (WebRTC)</div>
+    <div class="mode-tab" id="tabText" onclick="switchView('text')" data-i18n="tabText">📋 کلیپ‌بورد و متن فوری</div>
   </div>
 
   <!-- QR Section -->
@@ -437,8 +497,8 @@ HTML_PAGE = """<!DOCTYPE html>
       <div id="qrcode"></div>
     </div>
     <div class="qr-desc">
-      <h3>اتصال فوری با اسکن دوربین (Zero-Config)</h3>
-      <p>کافیه دوربین گوشی یا بارکدخوان سیستم دوستت رو جلوی این بارکد بگیری تا مستقیم و جفت‌شده به این صفحه وصل بشه.</p>
+      <h3 data-i18n="qrTitle">اتصال فوری با اسکن دوربین (Zero-Config)</h3>
+      <p data-i18n="qrDesc">کافیه دوربین گوشی یا بارکدخوان سیستم دوستت رو جلوی این بارکد بگیری تا مستقیم و جفت‌شده به این صفحه وصل بشه.</p>
     </div>
   </div>
 
@@ -446,11 +506,11 @@ HTML_PAGE = """<!DOCTYPE html>
   <div id="viewFiles">
     <div class="dropzone" id="dropzone">
       <div class="dropzone-icon">🚀</div>
-      <div class="dropzone-text">فایل‌ها یا پوشه کامل را اینجا رها کنید</div>
-      <div class="dropzone-sub">پشتیبانی کامل از فایل‌های سنگین ۲۰ گیگابایت+ با قابلیت ادامه خودکار از درصد باقیمانده</div>
+      <div class="dropzone-text" data-i18n="dropMain">فایل‌ها یا پوشه کامل را اینجا رها کنید</div>
+      <div class="dropzone-sub" data-i18n="dropSub">پشتیبانی کامل از فایل‌های سنگین ۲۰ گیگابایت+ با قابلیت ادامه خودکار از درصد باقیمانده</div>
       <div class="drop-actions">
-        <button class="btn-select" onclick="document.getElementById('fileInput').click()">انتخاب چند فایل</button>
-        <button class="btn-select btn-folder" onclick="document.getElementById('folderInput').click()">انتخاب یک پوشه کامل</button>
+        <button class="btn-select" onclick="document.getElementById('fileInput').click()" data-i18n="selectFiles">انتخاب چند فایل</button>
+        <button class="btn-select btn-folder" onclick="document.getElementById('folderInput').click()" data-i18n="selectFolder">انتخاب یک پوشه کامل</button>
       </div>
       <input type="file" id="fileInput" multiple>
       <input type="file" id="folderInput" webkitdirectory directory multiple>
@@ -551,9 +611,9 @@ HTML_PAGE = """<!DOCTYPE html>
   </div>
 
   <div class="card">
-    <div class="card-title">فایل‌های در دسترس برای دریافت</div>
+    <div class="card-title" data-i18n="filesAvailable">فایل‌های در دسترس برای دریافت</div>
     <div class="file-list" id="fileList">
-      <div class="empty-state">در حال بررسی فایل‌ها...</div>
+      <div class="empty-state" data-i18n="checkingFiles">در حال بررسی فایل‌ها...</div>
     </div>
   </div>
 </div>
@@ -868,18 +928,210 @@ async function deleteFile(filename) {
   }
 }
 
-async function checkP2PPeers() {
-  const el = document.getElementById('p2pStatusText');
-  el.textContent = 'اتصال پایدار محلی آماده همگام‌سازی مستقیم';
-  el.style.color = 'var(--accent)';
+let currentLang = 'fa';
+const i18n = {
+  fa: {
+    title: 'انتقال فایل پرسرعت و ضدقطعی',
+    secEnc: 'رمزنگاری چانک فعال',
+    pinLabel: 'پین تطبیق:',
+    tabFiles: '📁 انتقال فایل و فولدر',
+    tabP2P: '🌐 اتصال مستقیم P2P (WebRTC)',
+    tabText: '📋 کلیپ‌بورد و متن فوری',
+    qrTitle: 'اتصال فوری با اسکن دوربین (Zero-Config)',
+    qrDesc: 'کافیه دوربین گوشی یا بارکدخوان سیستم دوستت رو جلوی این بارکد بگیری تا مستقیم و جفت‌شده به این صفحه وصل بشه.',
+    dropMain: 'فایل‌ها یا پوشه کامل را اینجا رها کنید',
+    dropSub: 'پشتیبانی کامل از فایل‌های سنگین ۲۰ گیگابایت+ با قابلیت ادامه خودکار از درصد باقیمانده',
+    selectFiles: 'انتخاب چند فایل',
+    selectFolder: 'انتخاب یک پوشه کامل',
+    downloadTurbo: '⚡ دانلود فوق‌سریع (Multi-Thread)',
+    downloadNormal: 'دانلود عادی',
+    deleteFile: 'حذف 🗑️',
+    filesAvailable: 'فایل‌های در دسترس برای دریافت',
+    checkingFiles: 'در حال بررسی فایل‌ها...',
+    noFiles: 'هنوز فایلی ارسال نشده است.',
+    copy: 'کپی',
+    sendText: 'ارسال به شبکه محلی',
+    textPlaceholder: 'متن، لینک یا پسورد مورد نظر را اینجا بنویسید...',
+    receivedTexts: 'پیام‌های دریافتی:',
+    noTexts: 'هنوز پیامی ردوبدل نشده است.',
+    p2pTitle: '🔗 اتصال مستقیم مرورگر-به-مرورگر (WebRTC DataChannel)',
+    p2pDesc: 'در این حالت فایل‌ها مستقیماً از رم مرورگر شما به رم مرورگر طرف مقابل بدون نوشتن روی هیچ سروری انتقال پیدا می‌کنند.',
+    p2pStatus: 'وضعیت اتصال P2P:',
+    p2pWaiting: 'در انتظار همتا در شبکه...',
+    p2pRefresh: 'بروزرسانی همتاها',
+    pause: 'توقف موقت',
+    resume: 'ادامه انتقال',
+    dlStarting: 'شروع دانلود موازی...',
+    dlCompleted: 'دانلود با موفقیت پایان یافت ✔'
+  },
+  en: {
+    title: 'High-Speed Resumable Local Network File Transfer',
+    secEnc: 'Chunk Encryption Active',
+    pinLabel: 'Security PIN:',
+    tabFiles: '📁 File & Folder Transfer',
+    tabP2P: '🌐 Direct P2P (WebRTC)',
+    tabText: '📋 Instant Text & Clipboard',
+    qrTitle: 'Instant Camera Scan (Zero-Config)',
+    qrDesc: 'Scan this QR code with any phone camera or laptop to connect instantly without typing URLs.',
+    dropMain: 'Drop files or folders here',
+    dropSub: 'Resumable transfer for heavy files (20GB+) with auto-reconnect',
+    selectFiles: 'Select Files',
+    selectFolder: 'Select Folder',
+    downloadTurbo: '⚡ Turbo Multi-Thread Download',
+    downloadNormal: 'Standard Download',
+    deleteFile: 'Delete 🗑️',
+    filesAvailable: 'Available Files for Download',
+    checkingFiles: 'Checking files...',
+    noFiles: 'No files shared yet.',
+    copy: 'Copy',
+    sendText: 'Send to LAN',
+    textPlaceholder: 'Type notes, links or passwords here...',
+    receivedTexts: 'Received Messages:',
+    noTexts: 'No messages exchanged yet.',
+    p2pTitle: '🔗 Direct Browser-to-Browser Transfer (WebRTC)',
+    p2pDesc: 'Transfers directly between peer browser memories without writing to disk.',
+    p2pStatus: 'P2P Status:',
+    p2pWaiting: 'Waiting for network peers...',
+    p2pRefresh: 'Refresh Peers',
+    pause: 'Pause',
+    resume: 'Resume',
+    dlStarting: 'Starting multi-thread download...',
+    dlCompleted: 'Download Completed Successfully ✔'
+  }
+};
+
+function toggleLanguage() {
+  currentLang = currentLang === 'fa' ? 'en' : 'fa';
+  document.documentElement.lang = currentLang;
+  document.documentElement.dir = currentLang === 'fa' ? 'rtl' : 'ltr';
+  document.getElementById('langSwitch').textContent = currentLang === 'fa' ? 'English' : 'فارسی';
+
+  const t = i18n[currentLang];
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (t[key]) el.textContent = t[key];
+  });
+  loadFiles();
+}
+
+async function downloadTurbo(filename, totalSize) {
+  const t = i18n[currentLang];
+  monitor.style.display = 'block';
+  activeFileName.textContent = `📥 ${filename}`;
+  statusTag.className = 'status-tag status-active';
+  statusTag.textContent = t.dlStarting;
+  progressBar.style.width = '0%';
+  percentText.textContent = '0%';
+
+  const dlChunkSize = 4 * 1024 * 1024; // 4MB chunks
+  const totalChunks = Math.ceil(totalSize / dlChunkSize);
+  const concurrency = 6; // 6 parallel streams
+  let downloadedBytes = 0;
+  let lastBytes = 0;
+  let lastTime = performance.now();
+
+  let fileHandle = null;
+  let writable = null;
+  let useFileSystemAccess = ('showSaveFilePicker' in window);
+
+  try {
+    if (useFileSystemAccess) {
+      fileHandle = await window.showSaveFilePicker({ suggestedName: filename });
+      writable = await fileHandle.createWritable();
+    }
+  } catch (err) {
+    useFileSystemAccess = false;
+  }
+
+  const chunksData = useFileSystemAccess ? null : new Array(totalChunks);
+  let chunkIndex = 0;
+
+  async function worker() {
+    while (true) {
+      const idx = chunkIndex++;
+      if (idx >= totalChunks) break;
+
+      const start = idx * dlChunkSize;
+      const end = Math.min(start + dlChunkSize - 1, totalSize - 1);
+
+      let success = false;
+      let attempts = 0;
+      while (!success && attempts < 5) {
+        try {
+          attempts++;
+          const res = await fetch(`/download/${encodeURIComponent(filename)}`, {
+            headers: { 'Range': `bytes=${start}-${end}` }
+          });
+          if (!res.ok && res.status !== 206) throw new Error('Download error');
+          const buf = await res.arrayBuffer();
+
+          if (useFileSystemAccess && writable) {
+            await writable.write({ type: 'write', position: start, data: buf });
+          } else {
+            chunksData[idx] = buf;
+          }
+
+          downloadedBytes += buf.byteLength;
+          const now = performance.now();
+          const elapsed = (now - lastTime) / 1000;
+          if (elapsed >= 0.5 || downloadedBytes === totalSize) {
+            const bytesPerSec = (downloadedBytes - lastBytes) / elapsed;
+            const mbps = (bytesPerSec / (1024 * 1024)).toFixed(1);
+            speedText.textContent = `${mbps} MB/s`;
+
+            const remBytes = totalSize - downloadedBytes;
+            const eta = bytesPerSec > 0 ? Math.round(remBytes / bytesPerSec) : 0;
+            const m = Math.floor(eta / 60);
+            const s = eta % 60;
+            etaText.textContent = m > 0 ? `${m}m ${s}s` : `${s}s`;
+
+            lastTime = now;
+            lastBytes = downloadedBytes;
+          }
+
+          const pct = ((downloadedBytes / totalSize) * 100).toFixed(1);
+          progressBar.style.width = `${pct}%`;
+          percentText.textContent = `${pct}%`;
+          transferredText.textContent = `${fmtSize(downloadedBytes)} / ${fmtSize(totalSize)}`;
+          success = true;
+        } catch (e) {
+          await new Promise(r => setTimeout(r, 1000));
+        }
+      }
+    }
+  }
+
+  const workers = [];
+  for (let w = 0; w < concurrency; w++) workers.push(worker());
+  await Promise.all(workers);
+
+  if (useFileSystemAccess && writable) {
+    await writable.close();
+  } else {
+    const finalBlob = new Blob(chunksData);
+    const blobUrl = URL.createObjectURL(finalBlob);
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+  }
+
+  statusTag.className = 'status-tag status-done';
+  statusTag.textContent = t.dlCompleted;
+  progressBar.style.width = '100%';
+  percentText.textContent = '100%';
 }
 
 async function loadFiles() {
+  const t = i18n[currentLang];
   try {
     const res = await fetch('/api/files');
     const files = await res.json();
     if (!files || files.length === 0) {
-      fileList.innerHTML = '<div class="empty-state">هنوز فایلی ارسال نشده است.</div>';
+      fileList.innerHTML = `<div class="empty-state">${t.noFiles}</div>`;
       return;
     }
     fileList.innerHTML = files.map(f => `
@@ -887,8 +1139,9 @@ async function loadFiles() {
         <div class="file-name">${f.name}</div>
         <div class="file-meta-right">
           <div class="file-size">${f.size_formatted}</div>
-          <a href="/download/${encodeURIComponent(f.name)}" class="btn-dl" download>دانلود</a>
-          <button class="btn-del" onclick="deleteFile('${f.name}')">حذف 🗑️</button>
+          <button class="btn-dl btn-dl-turbo" onclick="downloadTurbo('${f.name}', ${f.size})">${t.downloadTurbo}</button>
+          <a href="/download/${encodeURIComponent(f.name)}" class="btn-dl" download>${t.downloadNormal}</a>
+          <button class="btn-del" onclick="deleteFile('${f.name}')">${t.deleteFile}</button>
         </div>
       </div>
     `).join('');
@@ -988,6 +1241,24 @@ class LandropHandler(BaseHTTPRequestHandler):
             self.send_header('Content-Disposition', f'attachment; filename="{quote(os.path.basename(filename))}"')
             self.send_header('Accept-Ranges', 'bytes')
             self.end_headers()
+
+            try:
+                # Zero-copy kernel sendfile on Unix (macOS / Linux)
+                if hasattr(os, 'sendfile') and not sys.platform.startswith('win'):
+                    with open(filepath, 'rb') as f:
+                        fileno = f.fileno()
+                        sockno = self.wfile.fileno()
+                        offset = start
+                        remaining = content_len
+                        while remaining > 0:
+                            sent = os.sendfile(sockno, fileno, offset, remaining)
+                            if sent == 0:
+                                break
+                            offset += sent
+                            remaining -= sent
+                    return
+            except (OSError, AttributeError):
+                pass
 
             with open(filepath, 'rb') as f:
                 f.seek(start)
@@ -1167,6 +1438,7 @@ def run():
     port = find_free_port(default_port)
     server = ThreadedHTTPServer(('0.0.0.0', port), LandropHandler)
     ip = get_lan_ip()
+    start_discovery_beacon(ip, port)
     print("=" * 60)
     print("⚡ AirBeam Server Started")
     print(f"📡 Local Network URL: http://{ip}:{port}")
